@@ -11,7 +11,7 @@ export const siteConfig = {
   location: "Islamabad, Pakistan",
   available: true,
   email: "mustafa357yt@gmail.com",
-  linkedin: "https://www.linkedin.com/in/mustafac0des/",
+  linkedin: "https://www.linkedin.com/in/mustafac0des",
   github: "https://wwww.github.com/mustafac0des",
   profilePhoto: null, // Add a photo URL here when available
 };
@@ -60,7 +60,7 @@ export const timelineItems = [
     title: "Natural Language Processing",
     organization: "Elevvo Pathways",
     date: "Aug 2025 – Sept 2025",
-    dateShort: "2025",
+    dateShort: "Sep 2025",
     status: "Completed",
     isLive: false,
     description:
@@ -75,14 +75,14 @@ export const timelineItems = [
     title: "B.Sc. Software Engineering",
     organization: "COMSATS University Islamabad",
     date: "2022 – June 2026",
-    dateShort: "2022",
+    dateShort: "Jan 2022",
     status: "Completed",
-    isLive: true,
+    isLive: false,
     description:
-      "Pursuing a Bachelor's degree in Software Engineering with a focus on full-stack development, AI integration, and software quality assurance. Active participant in university tech societies.",
-    skills: ["Software Engineering and Development", "Communication and Document Writing Skills", "Professional Practises and Management"],
-    images: [],
-    link: "https://cuiwah.edu.pk/",
+      "Pursued a Bachelor's degree in Software Engineering with a focus on full-stack development, AI integration, and software quality assurance. Graduated with a strong foundation in both technical and managerial aspects of software development.",
+    skills: ["Software Engineering", "Development", "Communication Skills", "Documentation Skills", "Professional Practises", "Management"],
+    images: ["\BSc-cert.jpg"],
+    link: "https://cuiwah.edu.pk/Pages/About",
   },
 
   // ---- CERTIFICATIONS ----
@@ -91,15 +91,15 @@ export const timelineItems = [
     type: "certification",
     title: "Front-End Web Developer",
     organization: "EVS Professional Training Institute",
-    date: "Oct 2021 - Dec 2021",
-    dateShort: "2021",
+    date: "Aug 2021 - Nov 2021",
+    dateShort: "Aug 2021",
     status: "Completed",
     isLive: false,
     description:
       "Completed a professional front-end web development training program covering HTML, CSS, JavaScript, and responsive design principles.",
-    skills: ["HTML", "CSS", "JavaScript", "Bootstrap", "jQuery", "REST APIs", "ReactJS"],
-    images: [],
-    link: null,
+    skills: ["HTML", "CSS", "JavaScript", "JSON", "ReactJS", "Bootstrap", "jQuery", "REST APIs"],
+    images: ["/Web-cert.jpg"],
+    link: "https://www.evslearning.com/Home/ContactUs",
   },
   {
     id: "cert-kaggle-intro",
@@ -112,8 +112,8 @@ export const timelineItems = [
     isLive: false,
     description:
       "Kaggle's Intro to Programming course, covering the fundamentals of programming logic, Python syntax, and computational thinking.",
-    skills: ["Python"],
-    images: [],
+    skills: ["Python", "Kaggle", "Notebooks"],
+    images: ["/Programming-cert.png"],
     link: "https://www.kaggle.com/learn/certification/mustafac0des/intro-to-programming",
   },
   {
@@ -127,8 +127,8 @@ export const timelineItems = [
     isLive: false,
     description:
       "Advanced Python programming certification from Kaggle covering functions, data types, loops, list comprehensions, and more.",
-    skills: ["Python"],
-    images: ["/python.jpg"],
+    skills: ["Python", "Kaggle", "Notebooks"],
+    images: ["/Python-cert.png"],
     link: "https://www.kaggle.com/learn/certification/mustafac0des/python",
   },
   {
@@ -141,9 +141,9 @@ export const timelineItems = [
     status: "Completed",
     isLive: false,
     description:
-      "Completed Operations Management course from IESE Business School (ranked Top 5 globally) focusing on process optimization, capacity planning, and supply chain management.",
-    skills: ["Operations Management", "Business Strategy"],
-    images: [],
+      "Completed Operations Management course from IESE Business School focusing on process optimization, capacity planning, and supply chain management.",
+    skills: ["Process Improvement", "Administration", "Process Design", "Inventory Management", "Operational Analysis", "Process Management", "Process Analysis", "Operations", "Capacity Management", "Process Improvement and Optimization", "Performance Improvement", "Business Process Improvement"],
+    images: ["/OM-cert.jpg"],
     link: "https://www.coursera.org/account/accomplishments/verify/VS1OAFWDPAGT",
   },
   {
@@ -156,9 +156,9 @@ export const timelineItems = [
     status: "Completed",
     isLive: false,
     description:
-      "Learned how to leverage Jira for effective QA workflows, bug tracking, sprint management, and agile test cycle management.",
-    skills: ["Jira", "Quality Assurance", "Software Testing"],
-    images: [],
+      "Execute software testing in Jira, using test cases and documentation to ensure quality assurance and software reliability.",
+    skills: ["Test Tools", "Problem Solving", "Development Testing", "User Interface and User Experience (UI/UX) Design", "Software Quality Assurance", "Software Development", "Jira", "Test Planning", "Functional Testing", "Agile Methodology", "Software Testing", "Test Case"],
+    images: ["/Jira-cert.jpg"],
     link: "https://coursera.org/verify/MPMLG1MGLQFR",
   },
   {
@@ -166,46 +166,61 @@ export const timelineItems = [
     type: "certification",
     title: "Foundations of Project Management",
     organization: "Google via Coursera",
-    date: "Sep 2026",
+    date: "Aug 2026 - Sep 2026",
     dateShort: "Sep 2026",
     status: "Completed",
     isLive: false,
     description:
       "Describe project management skills, roles, and responsibilities across a variety of industries\nExplain the project management life cycle and compare different program management methodologies\nDefine organizational structure and organizational culture and explain how it impacts project management.",
-    skills: ["Project Management", "Project Management Life Cycle", "Change Management", "Organizational Structure", "Organization Culture"],
-    images: [""],
+    skills: ["Change Management", "Project Planning", "Strategic Thinking", "Program Management", "Project Management Life Cycle", "AI Enablement", "Organizational Structure", "Project Management", "Organizational Change"],
+    images: ["F-PM-cert.jpg"],
     link: "https://www.coursera.org/account/accomplishments/records/35WEXIL517C4",
   },
 
   // ---- PROJECTS ----
+  {
+    id: "proj-lorelink",
+    type: "project",
+    title: "Lorelink",
+    organization: "Final Year Project",
+    date: "Apr 2025 - Jan 2026",
+    dateShort: "Jan 2026",
+    status: "Completed",
+    isLive: false,
+    description:
+      "Enterprise-grade RAG (Retrieval-Augmented Generation) application with strict Role-Based Access Control (RBAC). Hosted on Hugging Face Spaces, featuring vector search, prompt engineering, and document isolation to ensure data privacy across permission tiers.",
+    skills: ["Python", "LangChain", "ChromaDB", "Llama 3.2", "Gradio", "RAG", "RBAC", "Hugging Face Spaces"],
+    images: ["L1.jpeg", "L2.jpeg", "L3.jpeg", "L4.jpeg", "L5.jpeg", "L6.jpeg", "L7.jpeg"],
+    link: "https://youtu.be/YHjZMzd9XdE",
+  },
   {
     id: "proj-rag-rbac",
     type: "project",
     title: "Multi-Document RAG Agent",
     organization: "Personal Project",
     date: "May 2025",
-    dateShort: "2025",
+    dateShort: "May 2025",
     status: "Live",
     isLive: true,
     description:
-      "Enterprise-grade RAG (Retrieval-Augmented Generation) application with strict Role-Based Access Control (RBAC). Built with Python, LangChain, ChromaDB, and Meta Llama 3.2 1B. Hosted on Hugging Face Spaces, featuring vector search, prompt engineering, and document isolation to ensure data privacy across permission tiers.",
-    skills: ["Python", "LangChain", "ChromaDB", "Llama 3.2", "Gradio", "RAG", "RBAC", "Hugging Face"],
+      "Enterprise-grade RAG (Retrieval-Augmented Generation) application with strict Role-Based Access Control (RBAC). Hosted on Hugging Face Spaces, featuring vector search, prompt engineering, and document isolation to ensure data privacy across permission tiers.",
+    skills: ["Python", "LangChain", "ChromaDB", "Llama 3.2", "Gradio", "RAG", "RBAC", "Hugging Face Spaces"],
     images: [""],
-    link: "https://huggingface.co/",
+    link: "https://huggingface.co/spaces/mustafac0des/Multi-Document-RAG-Agent",
   },
   {
     id: "proj-strings",
     type: "project",
     title: "Strings",
     organization: "Personal Project",
-    date: "2024",
-    dateShort: "2024",
+    date: "July 2024 - Aug 2024",
+    dateShort: "Aug 2024",
     status: "Completed",
     isLive: false,
     description:
-      "A full-featured social media platform supporting follower networks, interactive feeds, and REST APIs. Built with the MERN stack (MongoDB, Express, React, Node.js). Features dark/light themes, Base64 media storage, and Jest-based test coverage. Underwent significant technical debt reduction and legacy codebase modernization.",
-    skills: ["MongoDB", "Express", "React", "Node.js", "Jest", "REST API"],
-    images: [],
+      "A full-featured social media platform supporting follower networks, interactive feeds, and REST APIs. Built with the MERN stack (MongoDB, Express, React, Node.js). Features dark/light themes, Base64 media storage, and Postman-based API test coverage. Underwent significant technical debt reduction and legacy codebase modernization.",
+    skills: ["MongoDB", "Express", "React", "Node.js", "Postman", "REST API"],
+    images: ["St1.png", "St2.png", "St3.png", "St4.png"],
     link: null,
   },
   {
@@ -214,13 +229,13 @@ export const timelineItems = [
     title: "RoomGO",
     organization: "Academic Project",
     date: "Nov 2024 - Dec 2024",
-    dateShort: "2024",
+    dateShort: "Dec 2024",
     status: "Completed",
     isLive: false,
     description:
       "A hotel management system featuring dynamic booking management and a full-stack MVC architecture. Built with PHP/Laravel and XAMPP. Supports dynamic room availability, user reservations, and a clean admin dashboard.",
     skills: ["PHP", "Laravel", "Blade", "MySQL", "XAMPP"],
-    images: [],
+    images: ["RG0.png", "RG1.png", "RG2.png", "RG3.png", "RG4.png"],
     link: null,
   },
   {
@@ -228,15 +243,15 @@ export const timelineItems = [
     type: "project",
     title: "Memorize It!",
     organization: "Academic Project",
-    date: "2023",
-    dateShort: "2023",
+    date: "Nov 2023",
+    dateShort: "Nov 2023",
     status: "Completed",
     isLive: false,
     description:
       "A memory card game application built with Java 17 and JavaFX. Features refactored game mechanics, optimized GUI architecture using Maven, and a clean component-based design pattern.",
     skills: ["Java", "JavaFX", "Maven", "OOP", "GUI Design"],
-    images: [],
-    link: null,
+    images: ["MI1.png", "MI2.png", "MI3.png", "MI4.png"],
+    link: "https://youtu.be/j4BgIKgNfi0",
   },
 ];
 
@@ -244,7 +259,7 @@ export const timelineItems = [
 // CONTACT / SOCIAL
 // ============================================================
 export const social = [
-  { label: "LinkedIn", url: "https://www.linkedin.com/in/mustafac0des/", icon: "FaLinkedin" },
-  { label: "GitHub", url: "https://github.com/mustafac0des", icon: "FaGithub" },
+  { label: "LinkedIn", url: siteConfig.linkedin, icon: "FaLinkedin" },
+  { label: "GitHub", url: siteConfig.github, icon: "FaGithub" },
   { label: "Email", url: `mailto:${siteConfig.email}`, icon: "FaEnvelope" },
 ];

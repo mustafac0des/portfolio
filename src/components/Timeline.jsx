@@ -12,17 +12,43 @@ const TYPE_CFG = {
   project: { icon: <FaCode />, label: 'Project', color: '#00e5a0', bg: 'rgba(0,229,160,0.13)' },
 };
 
-// ── Date parser ───────────────────────────────────────────────────────────────
-function parseDateShort(str) {
-  const M = { Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6, Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12 };
-  if (!str) return 0;
-  const parts = str.trim().split(' ');
-  if (parts.length === 2 && M[parts[0]]) return parseInt(parts[1]) * 100 + M[parts[0]];
-  const m = str.match(/(\d{4})/g);
-  return m ? parseInt(m[m.length - 1]) * 100 : 0;
+// ── Date helpers ──────────────────────────────────────────────────────────────
+const MONTH_MAP = { Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6, Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12 };
+
+/** Parse a date string to a sortable number: year*100 + month (1-12). Year-only → month 1. */
+function parseDate(raw) {
+  if (!raw) return 0;
+  // Normalise "Sept" → "Sep"
+  const s = raw.trim().replace(/\bSept\b/g, 'Sep').replace(/\bJune\b/g, 'Jun').replace(/\bJuly\b/g, 'Jul');
+  const parts = s.split(/\s+/);
+  // "Mon YYYY"
+  if (parts.length === 2 && MONTH_MAP[parts[0]]) return parseInt(parts[1]) * 100 + MONTH_MAP[parts[0]];
+  // Year only  "2022"
+  if (/^\d{4}$/.test(s)) return parseInt(s) * 100 + 1;
+  // Fallback: extract last 4-digit year
+  const m = s.match(/(\d{4})/g);
+  return m ? parseInt(m[m.length - 1]) * 100 + 1 : 0;
 }
 
-const sorted = [...timelineItems].sort((a, b) => parseDateShort(b.dateShort) - parseDateShort(a.dateShort));
+/** Parse a range string "Apr 2025 - Jan 2026" → { start, end } as numeric values. */
+function parseDateRange(dateStr) {
+  if (!dateStr) return { start: 0, end: 0 };
+  // Split on en-dash, em-dash, or surrounded hyphen
+  const parts = dateStr.split(/\s*[\u2013\u2014\-]\s*/).map(p => p.trim()).filter(Boolean);
+  if (parts.length >= 2) return { start: parseDate(parts[0]), end: parseDate(parts[parts.length - 1]) };
+  const v = parseDate(dateStr.trim());
+  return { start: v, end: v };
+}
+
+/** Duration in months between two numeric date values. */
+function durationMonths(start, end) {
+  const sy = Math.floor(start / 100), sm = start % 100 || 1;
+  const ey = Math.floor(end / 100), em = end % 100 || 1;
+  return (ey - sy) * 12 + (em - sm);
+}
+
+// ── Sort ─────────────────────────────────────────────────────────────────────
+const sorted = [...timelineItems].sort((a, b) => parseDate(b.dateShort) - parseDate(a.dateShort));
 
 const TABS = [
   { id: 'all', label: 'All' },
@@ -32,7 +58,143 @@ const TABS = [
   { id: 'education', label: 'Education' },
 ];
 
-// ── Card ──────────────────────────────────────────────────────────────────────
+// ── Row height constants ──────────────────────────────────────────────────────
+// Must stay in sync with minHeight + marginBottom on TimelineRow's outer div.
+const ROW_MIN_H = 190;   // px (minHeight of the outer grid row)
+const ROW_MARGIN = 28;    // px (marginBottom: '1.75rem' at 16px base)
+const ROW_H = ROW_MIN_H + ROW_MARGIN; // total "slot" height ≈ 218px
+
+/**
+ * Given a target date value and the sorted filtered item list,
+ * return a fractional index representing where that date sits
+ * on the timeline.  Newest = index 0 (top), oldest = last index (bottom).
+ * Values outside [0, n-1] are valid (above/below the visible range).
+ */
+function dateToFractionalIndex(targetDate, items) {
+  if (!items.length) return 0;
+  const vals = items.map(it => parseDate(it.dateShort));
+
+  // Above top
+  if (targetDate >= vals[0]) {
+    const gap = vals.length > 1 ? vals[0] - vals[1] : 100;
+    return 0 - (targetDate - vals[0]) / Math.max(gap, 1);
+  }
+  // Below bottom
+  const last = vals.length - 1;
+  if (targetDate <= vals[last]) {
+    const gap = vals.length > 1 ? vals[last - 1] - vals[last] : 100;
+    return last + (vals[last] - targetDate) / Math.max(gap, 1);
+  }
+  // Interpolate between two adjacent items
+  for (let i = 0; i < vals.length - 1; i++) {
+    const upper = vals[i];     // newer
+    const lower = vals[i + 1]; // older
+    if (targetDate <= upper && targetDate >= lower) {
+      const span = upper === lower ? 1 : upper - lower;
+      const t = (upper - targetDate) / span;
+      return i + t;
+    }
+  }
+  return vals.length / 2;
+}
+
+/**
+ * Compute the spine bar props for one timeline item.
+ * Returns null if no bar is needed, or:
+ *   { px, direction: 'up'|'down', isLive }
+ */
+function computeSpanBar(item, itemIndex, filteredItems) {
+  // ── Live: line goes UP to PRESENT ────────────────────────────────────────
+  if (item.isLive) {
+    // Extend from this dot upward, through all rows above
+    const upPx = itemIndex * ROW_H + ROW_MIN_H / 2;
+    return { px: Math.max(upPx, 48), direction: 'up', isLive: true };
+  }
+
+  const { start, end } = parseDateRange(item.date);
+  const months = durationMonths(start, end);
+
+  // Skip 1-month (or shorter) point events
+  if (months < 2) return null;
+
+  // Which end of the range is NOT the dot position?
+  const dotDate = parseDate(item.dateShort);
+  const distStart = Math.abs(dotDate - start);
+  const distEnd = Math.abs(dotDate - end);
+  const otherDate = distStart >= distEnd ? start : end;
+
+  const dotIdx = itemIndex;
+  const otherIdx = dateToFractionalIndex(otherDate, filteredItems);
+  const rowDiff = otherIdx - dotIdx; // positive = below = down
+
+  const px = Math.abs(rowDiff) * ROW_H;
+  if (px < 16) return null;
+
+  return { px, direction: rowDiff > 0 ? 'down' : 'up', isLive: false };
+}
+
+// ── SpineBar ──────────────────────────────────────────────────────────────────
+function SpineBar({ color, px, direction, isLive }) {
+  const isDown = direction === 'down';
+
+  return (
+    <div style={{
+      position: 'absolute',
+      [isDown ? 'top' : 'bottom']: '50%',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      width: 4,
+      height: px,
+      background: isDown
+        ? `linear-gradient(to bottom, ${color}ee 0%, ${color}22 100%)`
+        : `linear-gradient(to top,   ${color}ee 0%, ${color}22 100%)`,
+      borderRadius: 2,
+      zIndex: 1,
+      pointerEvents: 'none',
+    }}>
+
+      {/* End-date cap dot (bottom, for downward spans) */}
+      {!isLive && isDown && (
+        <div style={{
+          position: 'absolute',
+          bottom: 0, left: '50%',
+          transform: 'translate(-50%, 50%)',
+          width: 10, height: 10, borderRadius: '50%',
+          background: color, opacity: 0.75,
+          boxShadow: `0 0 8px ${color}80`,
+        }} />
+      )}
+
+      {/* PRESENT glow + label (top of upward bar for live items) */}
+      {isLive && (
+        <div style={{
+          position: 'absolute',
+          top: 0, left: '50%',
+          transform: 'translate(-50%, -100%)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+          paddingBottom: 8,
+        }}>
+          <div style={{ position: 'relative', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ position: 'absolute', width: 36, height: 36, borderRadius: '50%', background: color, opacity: 0.08 }} />
+            <div style={{ position: 'absolute', width: 20, height: 20, borderRadius: '50%', background: color, opacity: 0.3 }} />
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: color, opacity: 1, animation: 'pulse 2s infinite' }} />
+          </div>
+          <span style={{
+            fontSize: '0.58rem',
+            fontFamily: 'JetBrains Mono, monospace',
+            fontWeight: 700,
+            letterSpacing: '0.12em',
+            color,
+            opacity: 0.9,
+            whiteSpace: 'nowrap',
+          }}>PRESENT</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── TimelineCard ──────────────────────────────────────────────────────────────
 function TimelineCard({ item, cfg, onClick }) {
   return (
     <div
@@ -55,21 +217,18 @@ function TimelineCard({ item, cfg, onClick }) {
         transition: 'border-color 0.25s, box-shadow 0.25s, transform 0.25s',
       }}
     >
-      {/* Gradient glow */}
       <div className="tl-card-glow" style={{
         position: 'absolute', inset: 0, borderRadius: 'inherit', pointerEvents: 'none',
         background: `radial-gradient(ellipse at 110% -10%, ${cfg.color}18 0%, transparent 60%)`,
         opacity: 0, transition: 'opacity 0.3s',
       }} />
-
-      {/* Left accent bar */}
       <div style={{
         position: 'absolute', left: 0, top: '16px', bottom: '16px',
         width: 3, borderRadius: '0 4px 4px 0',
         background: `linear-gradient(to bottom, ${cfg.color}, ${cfg.color}40)`,
       }} />
 
-      {/* Type badge + live */}
+      {/* Badge row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', paddingLeft: '0.25rem' }}>
         <span style={{
           display: 'inline-flex', alignItems: 'center', gap: 5,
@@ -92,22 +251,16 @@ function TimelineCard({ item, cfg, onClick }) {
         )}
       </div>
 
-      {/* Date */}
       <p style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: cfg.color, fontWeight: 600, letterSpacing: '0.04em', paddingLeft: '0.25rem' }}>
         {item.date}
       </p>
-
-      {/* Title */}
       <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.35, margin: 0, paddingLeft: '0.25rem' }}>
         {item.title}
       </h3>
-
-      {/* Org */}
       <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', paddingLeft: '0.25rem' }}>
         {item.organization}
       </p>
 
-      {/* Skills */}
       {item.skills?.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 2, paddingLeft: '0.25rem' }}>
           {item.skills.slice(0, 3).map(s => (
@@ -127,7 +280,6 @@ function TimelineCard({ item, cfg, onClick }) {
         </div>
       )}
 
-      {/* Footer */}
       <div className="tl-card-footer" style={{
         display: 'flex', alignItems: 'center', gap: 6, paddingLeft: '0.25rem',
         paddingTop: '0.6rem', borderTop: '1px solid rgba(255,255,255,0.05)',
@@ -140,28 +292,23 @@ function TimelineCard({ item, cfg, onClick }) {
   );
 }
 
-// ── Center dot ───────────────────────────────────────────────────────────────
+// ── TimelineDot ───────────────────────────────────────────────────────────────
 function TimelineDot({ cfg, delay }) {
   return (
     <motion.div
       initial={{ scale: 0, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.4, delay, ease: [0.16, 1, 0.3, 1] }}
-      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
     >
-      {/* Outer ring pulse */}
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{
-          position: 'absolute',
-          width: 60, height: 60, borderRadius: '50%',
-          background: `${cfg.color}15`,
-          animation: 'pulse 2.5s ease-in-out infinite',
+          position: 'absolute', width: 60, height: 60, borderRadius: '50%',
+          background: `${cfg.color}15`, animation: 'pulse 2.5s ease-in-out infinite',
         }} />
-        {/* Inner dot */}
         <div style={{
           width: 42, height: 42, borderRadius: '50%',
-          background: cfg.bg,
-          border: `2px solid ${cfg.color}`,
+          background: cfg.bg, border: `2px solid ${cfg.color}`,
           boxShadow: `0 0 0 4px ${cfg.color}15, 0 0 20px ${cfg.color}30`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           color: cfg.color, fontSize: '1rem', zIndex: 1, flexShrink: 0,
@@ -173,8 +320,8 @@ function TimelineDot({ cfg, delay }) {
   );
 }
 
-// ── Single row ───────────────────────────────────────────────────────────────
-function TimelineRow({ item, index, onClick }) {
+// ── TimelineRow ───────────────────────────────────────────────────────────────
+function TimelineRow({ item, index, onClick, spanBar }) {
   const cfg = TYPE_CFG[item.type] || TYPE_CFG.project;
   const isLeft = index % 2 === 0;
   const delay = index * 0.06;
@@ -184,9 +331,9 @@ function TimelineRow({ item, index, onClick }) {
       display: 'grid',
       gridTemplateColumns: '1fr 80px 1fr',
       alignItems: 'center',
-      marginBottom: '1.75rem',
+      marginBottom: `${ROW_MARGIN}px`,
       position: 'relative',
-      minHeight: 160,
+      minHeight: ROW_MIN_H,
     }}>
       {/* LEFT */}
       <motion.div
@@ -200,7 +347,6 @@ function TimelineRow({ item, index, onClick }) {
             <div style={{ width: '100%', paddingRight: '1.5rem' }}>
               <TimelineCard item={item} cfg={cfg} onClick={onClick} />
             </div>
-            {/* connector: spans from the card edge all the way to the circle border */}
             <div style={{
               position: 'absolute', right: '-19px', top: '50%', transform: 'translateY(-50%)',
               width: 'calc(1.5rem + 19px)', height: 1,
@@ -212,9 +358,17 @@ function TimelineRow({ item, index, onClick }) {
         )}
       </motion.div>
 
-      {/* CENTER dot */}
+      {/* CENTER — dot + optional spine bar */}
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', zIndex: 2 }}>
         <TimelineDot cfg={cfg} delay={delay} />
+        {spanBar && (
+          <SpineBar
+            color={cfg.color}
+            px={spanBar.px}
+            direction={spanBar.direction}
+            isLive={spanBar.isLive}
+          />
+        )}
       </div>
 
       {/* RIGHT */}
@@ -226,7 +380,6 @@ function TimelineRow({ item, index, onClick }) {
       >
         {!isLeft ? (
           <>
-            {/* connector: spans from the circle border all the way to the card edge */}
             <div style={{
               position: 'absolute', left: '-19px', top: '50%', transform: 'translateY(-50%)',
               width: 'calc(1.5rem + 19px)', height: 1,
@@ -273,7 +426,11 @@ export default function Timeline() {
         {/* Filter tabs */}
         <div className="timeline-tabs" style={{ marginTop: '2.5rem' }}>
           {TABS.map(t => (
-            <button key={t.id} className={`timeline-tab${activeTab === t.id ? ' active' : ''}`} onClick={() => setActiveTab(t.id)}>
+            <button
+              key={t.id}
+              className={`timeline-tab${activeTab === t.id ? ' active' : ''}`}
+              onClick={() => setActiveTab(t.id)}
+            >
               {t.label}
               <span style={{
                 marginLeft: 7, fontSize: '0.68rem',
@@ -296,7 +453,7 @@ export default function Timeline() {
 
         {/* Timeline */}
         <div style={{ position: 'relative', marginTop: '3rem' }}>
-          {/* Vertical spine */}
+          {/* Vertical spine (base) */}
           <div style={{
             position: 'absolute', left: 'calc(50% - 1px)', top: 0, bottom: 0, width: 2,
             background: 'linear-gradient(to bottom, transparent, rgba(255,255,255,0.08) 8%, rgba(255,255,255,0.08) 92%, transparent)',
@@ -312,7 +469,13 @@ export default function Timeline() {
               transition={{ duration: 0.2 }}
             >
               {filtered.map((item, i) => (
-                <TimelineRow key={item.id} item={item} index={i} onClick={setSelected} />
+                <TimelineRow
+                  key={item.id}
+                  item={item}
+                  index={i}
+                  onClick={setSelected}
+                  spanBar={computeSpanBar(item, i, filtered)}
+                />
               ))}
             </motion.div>
           </AnimatePresence>
@@ -324,14 +487,14 @@ export default function Timeline() {
         {selected && <TimelineModal item={selected} onClose={() => setSelected(null)} />}
       </AnimatePresence>
 
-      {/* Card hover styles (JS-friendly) */}
+      {/* Hover styles */}
       <style>{`
         .tl-card:hover {
           border-color: rgba(255,255,255,0.15) !important;
           transform: translateY(-2px);
           box-shadow: 0 12px 40px rgba(0,0,0,0.4) !important;
         }
-        .tl-card:hover .tl-card-glow { opacity: 1 !important; }
+        .tl-card:hover .tl-card-glow  { opacity: 1 !important; }
         .tl-card:hover .tl-card-footer { color: var(--accent) !important; }
 
         @media (max-width: 768px) {
