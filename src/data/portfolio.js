@@ -298,7 +298,7 @@ export const timelineItems = [
     type: "experience",
     title: "Mobile Application Developer",
     organization: "Robo Soft Technologies Pvt. Ltd.",
-    date: "Sep 2026 - Present",
+    date: "Sep 2026",
     dateShort: "Dec 2026",
     status: "Ongoing",
     isLive: true,
