@@ -64,12 +64,6 @@ export default function Hero() {
                 </div>
               ))}
 
-              <div className="glance-avail">
-                <span>{siteConfig.email}</span>
-                <span className="avail-badge">
-                  <span className="status-dot" /> Available
-                </span>
-              </div>
             </div>
           </motion.div>
         </div>

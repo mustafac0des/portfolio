@@ -27,7 +27,6 @@
   --font-sans: 'Inter', sans-serif;
   --font-display: 'Space Grotesk', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
   --shadow-md: 0 8px 32px rgba(0,0,0,0.5);
   --shadow-lg: 0 24px 64px rgba(0,0,0,0.6);
 }
@@ -65,7 +64,7 @@ body::before {
 /* Typography */
 h1,h2,h3,h4 { font-family: var(--font-display); letter-spacing: -0.03em; line-height: 1.15; }
 p { font-family: var(--font-sans); }
-.mono { font-family: var(--font-mono); }
+
 
 /* Card base */
 .card {
@@ -93,6 +92,10 @@ p { font-family: var(--font-sans); }
 }
 .pill-accent { background: var(--accent-glow); color: var(--accent-light); border: 1px solid rgba(124,110,245,0.3); }
 .pill-green { background: var(--green-glow); color: var(--green); border: 1px solid rgba(0,229,160,0.3); }
+.pill-red { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.35); }
+.pill-amber { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+.pill-blue { background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); }
+.pill-brown { background: rgba(180,120,80,0.15); color: #c48b5c; border: 1px solid rgba(196,139,92,0.35); }
 .pill-muted { background: rgba(255,255,255,0.04); color: var(--text-secondary); border: 1px solid var(--border); }
 
 /* Section layout */
@@ -171,6 +174,14 @@ p { font-family: var(--font-sans); }
   border-radius: 50%;
   background: var(--green);
   box-shadow: 0 0 8px var(--green-glow);
+  animation: pulse 2s infinite;
+}
+.status-dot-red {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
   animation: pulse 2s infinite;
 }
 @keyframes pulse {
