@@ -292,7 +292,7 @@ export const timelineItems = [
     link: "https://www.coursera.org/account/accomplishments/records/35WEXIL517C4",
   },
 
-  // 15. Sep 2026 - Present — Mobile Application Developer Experience
+  // 15. Sep 2026 - Present — Web Developer Experience
   {
     id: "exp-robo-dev",
     type: "experience",
@@ -303,16 +303,13 @@ export const timelineItems = [
     status: "Ongoing",
     isLive: true,
     description:
-      "Developing high-performance Android & iOS mobile applications using Flutter and modern frameworks. Responsible for building responsive, user-friendly mobile interfaces, integrating RESTful APIs, Firebase services, and third-party solutions. Collaborating closely with UI/UX designers and backend teams while conducting thorough debugging, testing, and performance optimization to deliver scalable, maintainable mobile architectures.",
+      "Developing high-performance web applications using modern frameworks and technologies. Responsible for building responsive, user-friendly interfaces, integrating RESTful APIs, and implementing best practices for performance optimization and maintainability.",
     skills: [
-      "Mobile Application Development",
-      "Cross-Platform Development",
-      "Flutter",
-      "Dart",
-      "Android & iOS",
+      "Web Development",
+      "Frontend Development",
+      "Backend Development",
       "RESTful API Integration",
-      "Firebase Services",
-      "UI/UX Integration",
+      "Database Design",
       "Testing & Debugging",
       "Performance Optimization",
       "Git",
